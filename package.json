@@ -1,0 +1,9 @@
+{
+  "name": "margin-trading-admin",
+  "version": "1.0.0",
+  "description": "AI-Powered Margin Trading Admin Dashboard with JARVIS Copilot",
+  "scripts": {
+    "start": "python -m http.server 8000",
+    "server": "python app.py"
+  }
+}
