@@ -40,6 +40,23 @@ def row_to_dict(cursor, row):
         row_dict[col] = val
     return row_dict
 
+# ===== BUSINESS LOGIC =====
+def compute_trangthai(tlkq):
+    """Tự động xác định trạng thái tài khoản dựa trên tỷ lệ ký quỹ hiện tại (%).
+    - < 30%  : Force Sell (bán cưỡng bức)
+    - < 40%  : Warning (cảnh báo)
+    - >= 40% : Active (an toàn)
+    """
+    try:
+        tlkq = float(tlkq)
+    except (TypeError, ValueError):
+        return 'Active'
+    if tlkq < 30:
+        return 'Force Sell'
+    if tlkq < 40:
+        return 'Warning'
+    return 'Active'
+
 # ===== API ENDPOINTS - TAI KHOAN =====
 @app.route('/api/taikhoan', methods=['GET'])
 def get_taikhoan():
@@ -71,14 +88,16 @@ def get_taikhoan_detail(matk):
 def create_taikhoan():
     try:
         data = request.json
+        tlkq = data.get('TLKQHIENTAI', 100)
+        trangthai = compute_trangthai(tlkq)
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute('''
             INSERT INTO TKKYQUY (MATK, TENTK, TONGTIENHT, HANMUCVAY, TIENVAY, 
                                  TLKQHIENTAI, TLKQBANDAU, TLKQDUYTRI, TLFORCESELL, TRANGTHAI)
-            VALUES (?, ?, ?, ?, ?, ?, 50, 35, 30, 'Active')
+            VALUES (?, ?, ?, ?, ?, ?, 50, 35, 30, ?)
         ''', (data['MATK'], data['TENTK'], data['TONGTIENHT'], data['HANMUCVAY'],
-              data['TIENVAY'], data['TLKQHIENTAI']))
+              data.get('TIENVAY', 0), tlkq, trangthai))
         conn.commit()
         conn.close()
         return jsonify({'success': True}), 201
@@ -89,6 +108,9 @@ def create_taikhoan():
 def update_taikhoan(matk):
     try:
         data = request.json
+        tlkq = data.get('TLKQHIENTAI')
+        # Tự động tính lại trạng thái theo tỷ lệ ký quỹ (ưu tiên logic nghiệp vụ)
+        trangthai = compute_trangthai(tlkq) if tlkq is not None else data.get('TRANGTHAI')
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute('''
@@ -96,7 +118,7 @@ def update_taikhoan(matk):
                               TLKQHIENTAI=?, TRANGTHAI=? 
             WHERE MATK=?
         ''', (data.get('TENTK'), data.get('TONGTIENHT'), data.get('HANMUCVAY'),
-              data.get('TIENVAY'), data.get('TLKQHIENTAI'), data.get('TRANGTHAI'), matk))
+              data.get('TIENVAY'), tlkq, trangthai, matk))
         conn.commit()
         conn.close()
         return jsonify({'success': True}), 200

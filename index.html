@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Margin Trading Management System - SSMS Admin</title>
+    <!-- Chart.js để vẽ biểu đồ thật -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -12,25 +14,26 @@
         }
 
         :root {
-            --primary: #0d47a1;
-            --primary-dark: #08297c;
-            --primary-light: #1565c0;
-            --secondary: #00b894;
-            --danger: #d32f2f;
-            --warning: #f57c00;
-            --info: #0097a7;
-            --dark: #212121;
-            --light: #f5f7fa;
-            --gray: #9e9e9e;
-            --success: #4caf50;
-            --profit: #00c853;
-            --loss: #ff1744;
-            --border: #e0e0e0;
+            /* ===== BẢNG MÀU TỐI / ĐẬM HƠN ===== */
+            --primary: #0b2545;        /* navy đậm */
+            --primary-dark: #061629;   /* navy rất đậm */
+            --primary-light: #13315c;  /* navy nhạt hơn 1 chút */
+            --secondary: #00876c;      /* teal đậm */
+            --danger: #b71c1c;         /* đỏ đậm */
+            --warning: #e65100;        /* cam đậm */
+            --info: #006978;           /* xanh ngọc đậm */
+            --dark: #1a202c;
+            --light: #eef1f6;          /* nền vùng nội dung */
+            --gray: #6b7280;
+            --success: #1b5e20;        /* xanh lá đậm */
+            --profit: #1b5e20;
+            --loss: #b71c1c;
+            --border: #d4d9e2;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #061629 0%, #0b2545 100%);
             min-height: 100vh;
             color: var(--dark);
         }
@@ -47,7 +50,7 @@
             color: white;
             padding: 20px 0;
             overflow-y: auto;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.25);
             position: fixed;
             height: 100vh;
             left: 0;
@@ -92,7 +95,7 @@
         }
 
         .sidebar-link:hover, .sidebar-link.active {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.12);
             color: white;
             border-left-color: var(--secondary);
         }
@@ -153,7 +156,7 @@
         .btn-primary:hover {
             background: var(--primary-dark);
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(13,71,161,0.3);
+            box-shadow: 0 4px 12px rgba(11,37,69,0.4);
         }
 
         .btn-secondary {
@@ -162,7 +165,7 @@
         }
 
         .btn-secondary:hover {
-            background: #00a86b;
+            background: #006e57;
         }
 
         .btn-danger {
@@ -171,7 +174,7 @@
         }
 
         .btn-danger:hover {
-            background: #c62828;
+            background: #8e1414;
         }
 
         .btn-warning {
@@ -199,14 +202,8 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* ===== DASHBOARD CARDS ===== */
@@ -231,17 +228,9 @@
             box-shadow: 0 8px 20px rgba(0,0,0,0.15);
         }
 
-        .stat-card.warning {
-            border-left-color: var(--warning);
-        }
-
-        .stat-card.danger {
-            border-left-color: var(--danger);
-        }
-
-        .stat-card.success {
-            border-left-color: var(--success);
-        }
+        .stat-card.warning { border-left-color: var(--warning); }
+        .stat-card.danger { border-left-color: var(--danger); }
+        .stat-card.success { border-left-color: var(--success); }
 
         .stat-label {
             font-size: 12px;
@@ -252,36 +241,19 @@
         }
 
         .stat-value {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 700;
             color: var(--primary);
             margin-bottom: 10px;
         }
 
-        .stat-card.warning .stat-value {
-            color: var(--warning);
-        }
+        .stat-card.warning .stat-value { color: var(--warning); }
+        .stat-card.danger .stat-value { color: var(--danger); }
+        .stat-card.success .stat-value { color: var(--success); }
 
-        .stat-card.danger .stat-value {
-            color: var(--danger);
-        }
-
-        .stat-card.success .stat-value {
-            color: var(--success);
-        }
-
-        .stat-change {
-            font-size: 12px;
-            color: var(--gray);
-        }
-
-        .stat-change.up {
-            color: var(--success);
-        }
-
-        .stat-change.down {
-            color: var(--danger);
-        }
+        .stat-change { font-size: 12px; color: var(--gray); }
+        .stat-change.up { color: var(--success); }
+        .stat-change.down { color: var(--danger); }
 
         /* ===== TABLES ===== */
         .table-container {
@@ -294,7 +266,7 @@
 
         .table-header {
             padding: 20px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
             color: white;
             display: flex;
             justify-content: space-between;
@@ -319,13 +291,18 @@
             font-size: 12px;
         }
 
+        .chart-body {
+            padding: 20px;
+            height: 320px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
         }
 
         thead tr {
-            background: #f5f7fa;
+            background: #eef1f6;
             border-bottom: 2px solid var(--border);
         }
 
@@ -344,7 +321,7 @@
         }
 
         tbody tr:hover {
-            background: #f9fafb;
+            background: #f4f6fa;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
 
@@ -368,53 +345,19 @@
             text-transform: uppercase;
         }
 
-        .badge-success {
-            background: rgba(76,175,80,0.2);
-            color: var(--success);
-        }
+        .badge-success { background: rgba(27,94,32,0.15); color: var(--success); }
+        .badge-warning { background: rgba(230,81,0,0.15); color: var(--warning); }
+        .badge-danger { background: rgba(183,28,28,0.15); color: var(--danger); }
+        .badge-info { background: rgba(0,105,120,0.15); color: var(--info); }
+        .badge-primary { background: rgba(11,37,69,0.15); color: var(--primary); }
 
-        .badge-warning {
-            background: rgba(245,124,0,0.2);
-            color: var(--warning);
-        }
-
-        .badge-danger {
-            background: rgba(211,47,47,0.2);
-            color: var(--danger);
-        }
-
-        .badge-info {
-            background: rgba(0,149,167,0.2);
-            color: var(--info);
-        }
-
-        .badge-primary {
-            background: rgba(13,71,161,0.2);
-            color: var(--primary);
-        }
-
-        .text-profit {
-            color: var(--profit);
-            font-weight: 600;
-        }
-
-        .text-loss {
-            color: var(--loss);
-            font-weight: 600;
-        }
+        .text-profit { color: var(--profit); font-weight: 600; }
+        .text-loss { color: var(--loss); font-weight: 600; }
 
         /* ===== FORMS ===== */
-        .form-container {
-            background: white;
-            border-radius: 10px;
-            padding: 25px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-
         .form-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 20px;
             margin-bottom: 20px;
         }
@@ -443,12 +386,7 @@
         input:focus, select:focus, textarea:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(13,71,161,0.1);
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 100px;
+            box-shadow: 0 0 0 3px rgba(11,37,69,0.12);
         }
 
         .form-actions {
@@ -457,7 +395,7 @@
             margin-top: 20px;
         }
 
-        /* ===== AI COPILOT SIDEBAR ===== */
+        /* ===== AI COPILOT ===== */
         .ai-copilot {
             position: fixed;
             bottom: 20px;
@@ -466,7 +404,7 @@
             max-height: 500px;
             background: white;
             border-radius: 12px;
-            box-shadow: 0 5px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 30px rgba(0,0,0,0.3);
             display: flex;
             flex-direction: column;
             z-index: 500;
@@ -474,18 +412,12 @@
         }
 
         @keyframes slideUp {
-            from {
-                transform: translateY(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            from { transform: translateY(400px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .ai-header {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--info) 100%);
             color: white;
             padding: 15px;
             border-radius: 12px 12px 0 0;
@@ -495,16 +427,14 @@
             font-weight: 700;
         }
 
-        .ai-icon {
-            font-size: 18px;
-            margin-right: 8px;
-        }
+        .ai-icon { font-size: 18px; margin-right: 8px; }
 
         .ai-messages {
             flex: 1;
             overflow-y: auto;
             padding: 15px;
-            background: #f9fafb;
+            background: #f4f6fa;
+            min-height: 180px;
         }
 
         .ai-message {
@@ -516,30 +446,24 @@
         }
 
         @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
         .ai-message.system {
-            background: rgba(255,107,107,0.1);
-            color: #d32f2f;
-            border-left: 3px solid #d32f2f;
+            background: rgba(183,28,28,0.1);
+            color: var(--danger);
+            border-left: 3px solid var(--danger);
         }
 
         .ai-message.suggest {
-            background: rgba(76,175,80,0.1);
+            background: rgba(27,94,32,0.1);
             color: var(--success);
             border-left: 3px solid var(--success);
         }
 
         .ai-message.warning {
-            background: rgba(245,124,0,0.1);
+            background: rgba(230,81,0,0.1);
             color: var(--warning);
             border-left: 3px solid var(--warning);
         }
@@ -560,8 +484,8 @@
         }
 
         .ai-send {
-            padding: 8px 12px;
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+            padding: 8px 14px;
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--info) 100%);
             color: white;
             border: none;
             border-radius: 6px;
@@ -570,9 +494,7 @@
             transition: all 0.3s ease;
         }
 
-        .ai-send:hover {
-            transform: scale(1.05);
-        }
+        .ai-send:hover { transform: scale(1.05); }
 
         /* ===== SETTINGS PANEL ===== */
         .settings-panel {
@@ -588,9 +510,7 @@
             border-bottom: 1px solid var(--border);
         }
 
-        .settings-group:last-child {
-            border-bottom: none;
-        }
+        .settings-group:last-child { border-bottom: none; }
 
         .settings-group h3 {
             color: var(--primary);
@@ -601,42 +521,19 @@
 
         /* ===== RESPONSIVE ===== */
         @media (max-width: 768px) {
-            .sidebar {
-                width: 0;
-                padding: 0;
-            }
-
-            .main-content {
-                margin-left: 0;
-            }
-
-            .dashboard-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .ai-copilot {
-                width: 90%;
-                right: 5%;
-                max-height: 60vh;
-            }
-
-            .table-container {
-                overflow-x: auto;
-            }
+            .sidebar { width: 0; padding: 0; }
+            .main-content { margin-left: 0; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .ai-copilot { width: 90%; right: 5%; max-height: 60vh; }
+            .table-container { overflow-x: auto; }
+            .charts-grid { grid-template-columns: 1fr !important; }
         }
 
-        /* ===== CHARTS PLACEHOLDER ===== */
-        .chart-placeholder {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 10px;
-            padding: 40px;
-            text-align: center;
-            color: white;
-            font-weight: 600;
-            min-height: 300px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
         }
 
         /* ===== MODAL ===== */
@@ -648,7 +545,7 @@
             top: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0,0,0,0.55);
             animation: fadeIn 0.3s ease;
         }
 
@@ -666,7 +563,7 @@
             width: 90%;
             max-height: 90vh;
             overflow-y: auto;
-            box-shadow: 0 5px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 30px rgba(0,0,0,0.4);
         }
 
         .modal-header {
@@ -678,10 +575,7 @@
             padding-bottom: 15px;
         }
 
-        .modal-header h2 {
-            color: var(--primary);
-            font-size: 18px;
-        }
+        .modal-header h2 { color: var(--primary); font-size: 18px; }
 
         .modal-close {
             background: none;
@@ -692,9 +586,7 @@
             transition: all 0.3s ease;
         }
 
-        .modal-close:hover {
-            color: var(--danger);
-        }
+        .modal-close:hover { color: var(--danger); }
 
         /* ===== NOTIFICATION ===== */
         .notification {
@@ -704,34 +596,20 @@
             background: white;
             padding: 15px 20px;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.18);
             z-index: 3000;
             animation: slideDown 0.3s ease;
             max-width: 300px;
         }
 
         @keyframes slideDown {
-            from {
-                transform: translateY(-100px);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
+            from { transform: translateY(-100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
-        .notification.success {
-            border-left: 4px solid var(--success);
-        }
-
-        .notification.error {
-            border-left: 4px solid var(--danger);
-        }
-
-        .notification.warning {
-            border-left: 4px solid var(--warning);
-        }
+        .notification.success { border-left: 4px solid var(--success); }
+        .notification.error { border-left: 4px solid var(--danger); }
+        .notification.warning { border-left: 4px solid var(--warning); }
     </style>
 </head>
 <body>
@@ -744,25 +622,25 @@
             </div>
             <ul class="sidebar-menu">
                 <li class="sidebar-item">
-                    <a class="sidebar-link active" onclick="switchTab('dashboard')">📊 Dashboard</a>
+                    <a class="sidebar-link active" onclick="switchTab('dashboard', this)">📊 Dashboard</a>
                 </li>
                 <li class="sidebar-item">
-                    <a class="sidebar-link" onclick="switchTab('taikhoan')">💼 Tài khoản</a>
+                    <a class="sidebar-link" onclick="switchTab('taikhoan', this)">💼 Tài khoản</a>
                 </li>
                 <li class="sidebar-item">
-                    <a class="sidebar-link" onclick="switchTab('vithe')">📈 Danh mục Vị thế</a>
+                    <a class="sidebar-link" onclick="switchTab('vithe', this)">📈 Danh mục Vị thế</a>
                 </li>
                 <li class="sidebar-item">
-                    <a class="sidebar-link" onclick="switchTab('chungkhoan')">📱 Chứng khoán</a>
+                    <a class="sidebar-link" onclick="switchTab('chungkhoan', this)">📱 Chứng khoán</a>
                 </li>
                 <li class="sidebar-item">
-                    <a class="sidebar-link" onclick="switchTab('lenhgd')">📝 Sổ lệnh</a>
+                    <a class="sidebar-link" onclick="switchTab('lenhgd', this)">📝 Sổ lệnh</a>
                 </li>
                 <li class="sidebar-item">
-                    <a class="sidebar-link" onclick="switchTab('analytics')">📉 Phân tích</a>
+                    <a class="sidebar-link" onclick="switchTab('analytics', this)">📉 Phân tích</a>
                 </li>
                 <li class="sidebar-item">
-                    <a class="sidebar-link" onclick="switchTab('settings')">⚙️ Cài đặt</a>
+                    <a class="sidebar-link" onclick="switchTab('settings', this)">⚙️ Cài đặt</a>
                 </li>
             </ul>
         </div>
@@ -785,15 +663,13 @@
                 <!-- DASHBOARD TAB -->
                 <div id="dashboard" class="tab-content active">
                     <h2 style="margin-bottom: 20px; color: var(--primary); font-weight: 700;">Tổng quan hệ thống</h2>
-                    
+
                     <!-- STAT CARDS -->
                     <div class="dashboard-grid">
                         <div class="stat-card">
                             <div class="stat-label">Tổng dư nợ margin</div>
                             <div class="stat-value" id="total-debt">0 VNĐ</div>
-                            <div class="stat-change">
-                                <span id="debt-trend">Cập nhật...</span>
-                            </div>
+                            <div class="stat-change"><span id="debt-trend">Cập nhật...</span></div>
                         </div>
                         <div class="stat-card warning">
                             <div class="stat-label">Tài khoản cảnh báo</div>
@@ -806,37 +682,27 @@
                             <div class="stat-change">Rủi ro cao</div>
                         </div>
                         <div class="stat-card success">
-                            <div class="stat-label">Lãi ròng hôm nay</div>
-                            <div class="stat-value text-profit" id="daily-profit">+0 VNĐ</div>
-                            <div class="stat-change up">Tốt</div>
+                            <div class="stat-label">Lãi/Lỗ ròng danh mục</div>
+                            <div class="stat-value" id="daily-profit">+0 VNĐ</div>
+                            <div class="stat-change up" id="profit-trend">Theo vị thế hiện tại</div>
                         </div>
                     </div>
 
                     <!-- CHARTS -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+                    <div class="charts-grid">
                         <div class="table-container">
-                            <div class="table-header">
-                                <h2>Xu hướng Margin 7 ngày</h2>
-                            </div>
-                            <div class="chart-placeholder">
-                                📊 Biểu đồ Margin Ratio Trend
-                            </div>
+                            <div class="table-header"><h2>Xu hướng Margin 7 ngày</h2></div>
+                            <div class="chart-body"><canvas id="chartMarginTrend"></canvas></div>
                         </div>
                         <div class="table-container">
-                            <div class="table-header">
-                                <h2>Phân bố Tài khoản</h2>
-                            </div>
-                            <div class="chart-placeholder">
-                                🥧 Biểu đồ Active/Warning/Force Sell
-                            </div>
+                            <div class="table-header"><h2>Phân bố Tài khoản</h2></div>
+                            <div class="chart-body"><canvas id="chartAccountDist"></canvas></div>
                         </div>
                     </div>
 
                     <!-- TOP ACCOUNTS -->
                     <div class="table-container">
-                        <div class="table-header">
-                            <h2>Top 5 Tài khoản Margin cao nhất</h2>
-                        </div>
+                        <div class="table-header"><h2>Top 5 Tài khoản Margin cao nhất</h2></div>
                         <table>
                             <thead>
                                 <tr>
@@ -858,13 +724,12 @@
                 <!-- TAI KHOAN TAB -->
                 <div id="taikhoan" class="tab-content">
                     <h2 style="margin-bottom: 20px; color: var(--primary); font-weight: 700;">Quản lý Tài khoản Ký quỹ</h2>
-                    
                     <div class="table-container">
                         <div class="table-header">
                             <h2>Danh sách Tài khoản</h2>
                             <div class="table-controls">
-                                <input type="text" class="search-input" id="search-tk" placeholder="Tìm kiếm...">
-                                <button class="btn btn-primary btn-sm" onclick="openModalAddAccount()">+ Thêm</button>
+                                <input type="text" class="search-input" id="search-tk" placeholder="Tìm theo mã / tên..." oninput="renderTaiKhoan()">
+                                <button class="btn btn-secondary btn-sm" onclick="openModalAddAccount()">+ Thêm</button>
                             </div>
                         </div>
                         <table>
@@ -890,12 +755,11 @@
                 <!-- VITHE TAB -->
                 <div id="vithe" class="tab-content">
                     <h2 style="margin-bottom: 20px; color: var(--primary); font-weight: 700;">Danh mục Vị thế</h2>
-                    
                     <div class="table-container">
                         <div class="table-header">
                             <h2>Danh sách Vị thế</h2>
                             <div class="table-controls">
-                                <input type="text" class="search-input" placeholder="Tìm kiếm...">
+                                <input type="text" class="search-input" id="search-vt" placeholder="Tìm theo mã TK / CK..." oninput="renderViThe()">
                             </div>
                         </div>
                         <table>
@@ -906,7 +770,7 @@
                                     <th>Số lượng</th>
                                     <th>Giá vốn</th>
                                     <th>Giá hiện tại</th>
-                                    <th>Giá trị thế chập</th>
+                                    <th>Giá trị thế chấp</th>
                                     <th>Lãi/Lỗ</th>
                                     <th>%</th>
                                 </tr>
@@ -921,13 +785,12 @@
                 <!-- CHUNGKHOAN TAB -->
                 <div id="chungkhoan" class="tab-content">
                     <h2 style="margin-bottom: 20px; color: var(--primary); font-weight: 700;">Quản lý Chứng khoán</h2>
-                    
                     <div class="table-container">
                         <div class="table-header">
                             <h2>Danh sách Chứng khoán</h2>
                             <div class="table-controls">
-                                <input type="text" class="search-input" placeholder="Tìm kiếm...">
-                                <button class="btn btn-primary btn-sm" onclick="openModalAddCK()">+ Thêm</button>
+                                <input type="text" class="search-input" id="search-ck" placeholder="Tìm theo mã / tên..." oninput="renderChungKhoan()">
+                                <button class="btn btn-secondary btn-sm" onclick="openModalAddCK()">+ Thêm</button>
                             </div>
                         </div>
                         <table>
@@ -952,13 +815,12 @@
                 <!-- LENHGD TAB -->
                 <div id="lenhgd" class="tab-content">
                     <h2 style="margin-bottom: 20px; color: var(--primary); font-weight: 700;">Sổ lệnh giao dịch</h2>
-                    
                     <div class="table-container">
                         <div class="table-header">
                             <h2>Danh sách Lệnh giao dịch</h2>
                             <div class="table-controls">
-                                <input type="text" class="search-input" placeholder="Tìm kiếm...">
-                                <button class="btn btn-primary btn-sm" onclick="openModalAddLenh()">+ Thêm</button>
+                                <input type="text" class="search-input" id="search-lenh" placeholder="Tìm theo mã lệnh / TK / CK..." oninput="renderLenhGD()">
+                                <button class="btn btn-secondary btn-sm" onclick="openModalAddLenh()">+ Thêm</button>
                             </div>
                         </div>
                         <table>
@@ -985,20 +847,19 @@
                 <!-- ANALYTICS TAB -->
                 <div id="analytics" class="tab-content">
                     <h2 style="margin-bottom: 20px; color: var(--primary); font-weight: 700;">Phân tích & Báo cáo</h2>
-                    
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px;">
+                    <div class="charts-grid">
                         <div class="table-container">
-                            <div class="chart-placeholder">📊 Doanh thu theo ngày</div>
+                            <div class="table-header"><h2>Dư nợ theo tài khoản (Top 8)</h2></div>
+                            <div class="chart-body"><canvas id="chartDebtByAccount"></canvas></div>
                         </div>
                         <div class="table-container">
-                            <div class="chart-placeholder">📈 Margin Ratio Trend</div>
+                            <div class="table-header"><h2>Phân bố mức rủi ro</h2></div>
+                            <div class="chart-body"><canvas id="chartRiskDist"></canvas></div>
                         </div>
                     </div>
 
                     <div class="table-container">
-                        <div class="table-header">
-                            <h2>Danh mục rủi ro</h2>
-                        </div>
+                        <div class="table-header"><h2>Danh mục rủi ro</h2></div>
                         <table>
                             <thead>
                                 <tr>
@@ -1019,7 +880,6 @@
                 <!-- SETTINGS TAB -->
                 <div id="settings" class="tab-content">
                     <h2 style="margin-bottom: 20px; color: var(--primary); font-weight: 700;">Cài đặt Hệ thống</h2>
-                    
                     <div class="settings-panel">
                         <div class="settings-group">
                             <h3>🔑 AI Copilot API Key</h3>
@@ -1043,7 +903,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Margin Ratio Duy trì (%)</label>
-                                    <input type="number" id="margin-maintain" placeholder="35" value="35">
+                                    <input type="number" id="margin-maintain" placeholder="40" value="40">
                                 </div>
                                 <div class="form-group">
                                     <label>Margin Ratio Force Sell (%)</label>
@@ -1056,14 +916,10 @@
                         <div class="settings-group">
                             <h3>🔔 Cấu hình Thông báo</h3>
                             <div class="form-group">
-                                <label>
-                                    <input type="checkbox" id="notify-margin" checked> Thông báo khi margin < 40%
-                                </label>
+                                <label><input type="checkbox" id="notify-margin" checked> Thông báo khi margin &lt; 40%</label>
                             </div>
                             <div class="form-group">
-                                <label>
-                                    <input type="checkbox" id="notify-forcesell" checked> Thông báo khi bán cưỡng bức
-                                </label>
+                                <label><input type="checkbox" id="notify-forcesell" checked> Thông báo khi bán cưỡng bức</label>
                             </div>
                             <button class="btn btn-primary" onclick="saveNotificationSettings()">💾 Lưu cấu hình</button>
                         </div>
@@ -1076,27 +932,23 @@
     <!-- AI COPILOT -->
     <div class="ai-copilot">
         <div class="ai-header">
-            <div>
-                <span class="ai-icon">🤖</span> JARVIS AI Copilot
-            </div>
+            <div><span class="ai-icon">🤖</span> JARVIS AI Copilot</div>
             <button class="modal-close" onclick="toggleAICopilot()">✕</button>
         </div>
         <div class="ai-messages" id="ai-messages">
-            <div class="ai-message system">
-                ⚡ JARVIS Active - Sẵn sàng phân tích & đề xuất
-            </div>
+            <div class="ai-message system">⚡ JARVIS Active - Sẵn sàng phân tích & đề xuất</div>
         </div>
         <div class="ai-input-area">
-            <input type="text" class="ai-input" id="ai-input" placeholder="Hỏi JARVIS...">
-            <button class="ai-send" onclick="sendAIQuery()">↓</button>
+            <input type="text" class="ai-input" id="ai-input" placeholder="Hỏi JARVIS..." onkeydown="if(event.key==='Enter') sendAIQuery()">
+            <button class="ai-send" onclick="sendAIQuery()">↑</button>
         </div>
     </div>
 
-    <!-- MODALS -->
+    <!-- MODAL: TÀI KHOẢN (Thêm / Sửa) -->
     <div id="modalAddAccount" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Thêm Tài khoản mới</h2>
+                <h2 id="modal-account-title">Thêm Tài khoản mới</h2>
                 <button class="modal-close" onclick="closeModal('modalAddAccount')">✕</button>
             </div>
             <div class="form-row">
@@ -1119,18 +971,29 @@
                     <input type="number" id="modal-hanmucvay" placeholder="500000">
                 </div>
             </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Dư nợ hiện tại (VNĐ)</label>
+                    <input type="number" id="modal-tienvay" placeholder="0" value="0">
+                </div>
+                <div class="form-group">
+                    <label>Tỷ lệ ký quỹ hiện tại (%)</label>
+                    <input type="number" id="modal-tlkq" placeholder="100" value="100">
+                    <small style="margin-top:6px;color:var(--gray);">Trạng thái sẽ tự tính: &lt;30% Force Sell · &lt;40% Cảnh báo</small>
+                </div>
+            </div>
             <div class="form-actions">
-                <button class="btn btn-primary" onclick="saveNewAccount()">✓ Lưu</button>
+                <button class="btn btn-primary" onclick="saveAccount()">✓ Lưu</button>
                 <button class="btn btn-secondary" onclick="closeModal('modalAddAccount')">✕ Hủy</button>
             </div>
         </div>
     </div>
 
-    <!-- MODALS FOR CK, LENH -->
+    <!-- MODAL: CHỨNG KHOÁN (Thêm / Sửa) -->
     <div id="modalAddCK" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Thêm Chứng khoán</h2>
+                <h2 id="modal-ck-title">Thêm Chứng khoán</h2>
                 <button class="modal-close" onclick="closeModal('modalAddCK')">✕</button>
             </div>
             <div class="form-row">
@@ -1162,16 +1025,17 @@
                 </div>
             </div>
             <div class="form-actions">
-                <button class="btn btn-primary" onclick="saveNewCK()">✓ Lưu</button>
+                <button class="btn btn-primary" onclick="saveCK()">✓ Lưu</button>
                 <button class="btn btn-secondary" onclick="closeModal('modalAddCK')">✕ Hủy</button>
             </div>
         </div>
     </div>
 
+    <!-- MODAL: LỆNH (Thêm / Sửa) -->
     <div id="modalAddLenh" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>Thêm Lệnh giao dịch</h2>
+                <h2 id="modal-lenh-title">Thêm Lệnh giao dịch</h2>
                 <button class="modal-close" onclick="closeModal('modalAddLenh')">✕</button>
             </div>
             <div class="form-row">
@@ -1212,7 +1076,7 @@
                 </div>
             </div>
             <div class="form-actions">
-                <button class="btn btn-primary" onclick="saveNewLenh()">✓ Lưu</button>
+                <button class="btn btn-primary" onclick="saveLenh()">✓ Lưu</button>
                 <button class="btn btn-secondary" onclick="closeModal('modalAddLenh')">✕ Hủy</button>
             </div>
         </div>
@@ -1220,19 +1084,20 @@
 
     <script>
         const API_URL = 'http://localhost:5000/api';
-        let aiCopilotMessages = [];
 
-        // ===== HELPER FUNCTIONS =====
+        // ===== KHO DỮ LIỆU (cache để tìm kiếm / sửa) =====
+        const store = { tk: [], vt: [], ck: [], lenh: [] };
+        // Trạng thái đang sửa (null = đang thêm mới)
+        const editing = { account: null, ck: null, lenh: null };
+        // Đối tượng biểu đồ Chart.js
+        const charts = {};
+
+        // ===== HELPER =====
         function formatCurrency(value) {
-            return new Intl.NumberFormat('vi-VN', {
-                style: 'currency',
-                currency: 'VND'
-            }).format(value || 0);
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value || 0);
         }
-
-        function formatPercent(value) {
-            return (value || 0).toFixed(2) + '%';
-        }
+        function formatPercent(value) { return (value || 0).toFixed(2) + '%'; }
+        function esc(s) { return String(s == null ? '' : s).replace(/'/g, "\\'"); }
 
         function getStatusBadge(status) {
             const badges = {
@@ -1240,496 +1105,588 @@
                 'Warning': '<span class="badge badge-warning">⚠️ Cảnh báo</span>',
                 'Force Sell': '<span class="badge badge-danger">🔴 Bán cưỡng bức</span>'
             };
-            return badges[status] || status;
+            return badges[status] || ('<span class="badge badge-primary">' + (status || '') + '</span>');
+        }
+
+        // LOGIC NGHIỆP VỤ: xác định trạng thái theo tỷ lệ ký quỹ
+        function computeStatus(tlkq) {
+            tlkq = Number(tlkq) || 0;
+            if (tlkq < 30) return 'Force Sell';
+            if (tlkq < 40) return 'Warning';
+            return 'Active';
         }
 
         function getRiskLevel(marginRatio) {
-            if (marginRatio >= 50) return '<span class="badge badge-success">✓ Bình thường</span>';
-            if (marginRatio >= 35) return '<span class="badge badge-warning">⚠️ Cảnh báo</span>';
+            if (marginRatio >= 40) return '<span class="badge badge-success">✓ Bình thường</span>';
+            if (marginRatio >= 30) return '<span class="badge badge-warning">⚠️ Cảnh báo</span>';
             return '<span class="badge badge-danger">🔴 Rủi ro cao</span>';
         }
 
-        // ===== TAB SWITCHING =====
-        function switchTab(tabName) {
-            console.log("[v0] Switching to tab:", tabName);
-            
-            document.querySelectorAll('.tab-content').forEach(tab => {
-                tab.classList.remove('active');
-            });
-            
-            document.querySelectorAll('.sidebar-link').forEach(link => {
-                link.classList.remove('active');
-            });
+        // ===== TAB SWITCHING (đã sửa: nhận tham số element, không phụ thuộc biến event toàn cục) =====
+        function switchTab(tabName, el) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.sidebar-link').forEach(link => link.classList.remove('active'));
 
             const tabElement = document.getElementById(tabName);
-            if (tabElement) {
-                tabElement.classList.add('active');
-            }
+            if (tabElement) tabElement.classList.add('active');
+            if (el) el.classList.add('active');
 
-            if (event && event.target) {
-                event.target.classList.add('active');
-            }
-
-            // Load data for specific tabs
-            if (tabName === 'dashboard') {
-                loadDashboard();
-            } else if (tabName === 'taikhoan') {
-                loadTaiKhoan();
-            } else if (tabName === 'vithe') {
-                loadViThe();
-            } else if (tabName === 'chungkhoan') {
-                loadChungKhoan();
-            } else if (tabName === 'lenhgd') {
-                loadLenhGD();
-            } else if (tabName === 'analytics') {
-                loadAnalytics();
-            }
+            const loaders = {
+                dashboard: loadDashboard, taikhoan: loadTaiKhoan, vithe: loadViThe,
+                chungkhoan: loadChungKhoan, lenhgd: loadLenhGD, analytics: loadAnalytics
+            };
+            if (loaders[tabName]) loaders[tabName]();
         }
 
-        // ===== DATA LOADING =====
+        // ===== DASHBOARD =====
         async function loadDashboard() {
             try {
                 const [tkRes, vRes] = await Promise.all([
                     fetch(`${API_URL}/taikhoan`),
                     fetch(`${API_URL}/vithe`)
                 ]);
-                
                 const tks = await tkRes.json();
                 const vithe = await vRes.json();
+                store.tk = Array.isArray(tks) ? tks : [];
+                store.vt = Array.isArray(vithe) ? vithe : [];
 
-                // Calculate stats
-                const totalDebt = tks.reduce((sum, tk) => sum + (tk.TIENVAY || 0), 0);
-                const warningCount = tks.filter(tk => tk.TRANGTHAI === 'Warning').length;
-                const forceSellCount = tks.filter(tk => tk.TRANGTHAI === 'Force Sell').length;
+                const totalDebt = store.tk.reduce((sum, tk) => sum + (tk.TIENVAY || 0), 0);
+                const warningCount = store.tk.filter(tk => computeStatus(tk.TLKQHIENTAI) === 'Warning').length;
+                const forceSellCount = store.tk.filter(tk => computeStatus(tk.TLKQHIENTAI) === 'Force Sell').length;
+
+                // Lãi/Lỗ ròng = tổng lãi lỗ của toàn bộ vị thế
+                const netPnL = store.vt.reduce((sum, vt) => sum + (vt.GIAHIENTAI - vt.GIAVON) * vt.SLTONG, 0);
 
                 document.getElementById('total-debt').textContent = formatCurrency(totalDebt);
                 document.getElementById('warning-accounts').textContent = warningCount;
                 document.getElementById('forcesell-accounts').textContent = forceSellCount;
 
-                // Top accounts
-                const topAccounts = tks
-                    .sort((a, b) => (b.TIENVAY || 0) - (a.TIENVAY || 0))
-                    .slice(0, 5);
+                const profitEl = document.getElementById('daily-profit');
+                profitEl.textContent = (netPnL >= 0 ? '+' : '') + formatCurrency(netPnL);
+                profitEl.className = 'stat-value ' + (netPnL >= 0 ? 'text-profit' : 'text-loss');
+                document.getElementById('debt-trend').textContent = `${store.tk.length} tài khoản đang quản lý`;
 
-                const html = topAccounts.map(tk => `
+                // Top 5 dư nợ
+                const topAccounts = [...store.tk].sort((a, b) => (b.TIENVAY || 0) - (a.TIENVAY || 0)).slice(0, 5);
+                document.getElementById('top-accounts').innerHTML = topAccounts.map(tk => `
                     <tr>
                         <td><strong>${tk.MATK}</strong></td>
                         <td>${tk.TENTK}</td>
                         <td>${formatCurrency(tk.TONGTIENHT)}</td>
                         <td>${formatCurrency(tk.TIENVAY)}</td>
                         <td>${formatPercent(tk.TLKQHIENTAI)}</td>
-                        <td>${getStatusBadge(tk.TRANGTHAI)}</td>
+                        <td>${getStatusBadge(computeStatus(tk.TLKQHIENTAI))}</td>
                     </tr>
-                `).join('');
+                `).join('') || '<tr><td colspan="6">Không có dữ liệu</td></tr>';
 
-                document.getElementById('top-accounts').innerHTML = html || '<tr><td colspan="6">Không có dữ liệu</td></tr>';
-
-                // AI Suggestion
-                addAIMessage('suggest', `⚡ Dashboard updated: ${tks.length} accounts, ${warningCount} warnings, ${forceSellCount} force sells detected.`);
+                renderDashboardCharts(warningCount, forceSellCount);
+                runRiskScan();
             } catch (error) {
                 console.error('Error loading dashboard:', error);
-                addAIMessage('system', `❌ Error loading dashboard: ${error.message}`);
+                addAIMessage('system', `❌ Không kết nối được API (${error.message}). Hãy chắc chắn app.py đang chạy ở cổng 5000.`);
             }
         }
 
-        async function loadTaiKhoan() {
-            try {
-                const res = await fetch(`${API_URL}/taikhoan`);
-                const tks = await res.json();
+        function renderDashboardCharts(warningCount, forceSellCount) {
+            const activeCount = store.tk.length - warningCount - forceSellCount;
 
-                const html = tks.map(tk => `
-                    <tr>
-                        <td><strong>${tk.MATK}</strong></td>
-                        <td>${tk.TENTK}</td>
-                        <td>${formatCurrency(tk.TONGTIENHT)}</td>
-                        <td>${formatCurrency(tk.HANMUCVAY)}</td>
-                        <td>${formatCurrency(tk.TIENVAY)}</td>
-                        <td>${formatPercent(tk.TLKQHIENTAI)}</td>
-                        <td>${getStatusBadge(tk.TRANGTHAI)}</td>
-                        <td style="display: flex; gap: 5px;">
-                            <button class="btn btn-primary btn-sm" onclick="editTaiKhoan('${tk.MATK}')">✏️</button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteTaiKhoan('${tk.MATK}')">🗑️</button>
-                        </td>
-                    </tr>
-                `).join('');
+            // Biểu đồ phân bố tài khoản (doughnut)
+            drawChart('chartAccountDist', 'doughnut', {
+                labels: ['Active', 'Cảnh báo', 'Bán cưỡng bức'],
+                datasets: [{
+                    data: [activeCount, warningCount, forceSellCount],
+                    backgroundColor: ['#1b5e20', '#e65100', '#b71c1c'],
+                    borderWidth: 2, borderColor: '#fff'
+                }]
+            }, { plugins: { legend: { position: 'bottom' } } });
 
-                document.getElementById('taikhoan-table').innerHTML = html || '<tr><td colspan="8">Không có dữ liệu</td></tr>';
-            } catch (error) {
-                console.error('Error loading tai khoan:', error);
+            // Xu hướng margin trung bình 7 ngày (mô phỏng quanh giá trị trung bình hiện tại)
+            const avgMargin = store.tk.length
+                ? store.tk.reduce((s, t) => s + (t.TLKQHIENTAI || 0), 0) / store.tk.length : 50;
+            const labels = [], data = [];
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(); d.setDate(d.getDate() - i);
+                labels.push(d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }));
+                const noise = (Math.sin(i * 1.3) * 4) + (i === 0 ? 0 : (Math.random() * 3 - 1.5));
+                data.push(Math.max(20, +(avgMargin + noise).toFixed(1)));
             }
+            drawChart('chartMarginTrend', 'line', {
+                labels,
+                datasets: [{
+                    label: 'Margin Ratio TB (%)', data,
+                    borderColor: '#0b2545', backgroundColor: 'rgba(11,37,69,0.12)',
+                    fill: true, tension: 0.35, pointRadius: 4, pointBackgroundColor: '#0b2545'
+                }]
+            }, { scales: { y: { beginAtZero: false } } });
         }
 
-        async function loadViThe() {
-            try {
-                const res = await fetch(`${API_URL}/vithe`);
-                const vithe = await res.json();
-
-                const html = vithe.map(vt => {
-                    const laiLo = (vt.GIAHIENTAI - vt.GIAVON) * vt.SLTONG;
-                    const percent = ((vt.GIAHIENTAI - vt.GIAVON) / vt.GIAVON * 100).toFixed(2);
-                    const class_laiLo = laiLo >= 0 ? 'text-profit' : 'text-loss';
-
+        // ===== ANALYTICS =====
+        function loadAnalytics() {
+            // dùng store.tk nếu có, nếu chưa thì tải
+            const render = () => {
+                const sorted = [...store.tk].sort((a, b) => (a.TLKQHIENTAI || 0) - (b.TLKQHIENTAI || 0));
+                document.getElementById('risk-table').innerHTML = sorted.map(tk => {
+                    const tl = tk.TLKQHIENTAI || 0;
                     return `
-                        <tr>
-                            <td><strong>${vt.MATK}</strong></td>
-                            <td><strong>${vt.MACK}</strong></td>
-                            <td>${vt.SLTONG.toLocaleString('vi-VN')}</td>
-                            <td>${formatCurrency(vt.GIAVON)}</td>
-                            <td>${formatCurrency(vt.GIAHIENTAI)}</td>
-                            <td>${formatCurrency(vt.GTTHECHAP)}</td>
-                            <td class="${class_laiLo}">${laiLo >= 0 ? '+' : ''}${formatCurrency(laiLo)}</td>
-                            <td class="${class_laiLo}">${laiLo >= 0 ? '+' : ''}${percent}%</td>
-                        </tr>
-                    `;
-                }).join('');
-
-                document.getElementById('vithe-table').innerHTML = html || '<tr><td colspan="8">Không có dữ liệu</td></tr>';
-            } catch (error) {
-                console.error('Error loading vithe:', error);
-            }
-        }
-
-        async function loadChungKhoan() {
-            try {
-                const res = await fetch(`${API_URL}/chungkhoan`);
-                const cks = await res.json();
-
-                const html = cks.map(ck => `
-                    <tr>
-                        <td><strong>${ck.MACK}</strong></td>
-                        <td>${ck.TENCTY}</td>
-                        <td>${formatCurrency(ck.GIAHT)}</td>
-                        <td>${formatCurrency(ck.GIATRAN)}</td>
-                        <td>${formatCurrency(ck.GIASAN)}</td>
-                        <td>${formatPercent(ck.TYLECHOVAY)}</td>
-                        <td style="display: flex; gap: 5px;">
-                            <button class="btn btn-primary btn-sm" onclick="editChungKhoan('${ck.MACK}')">✏️</button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteChungKhoan('${ck.MACK}')">🗑️</button>
-                        </td>
-                    </tr>
-                `).join('');
-
-                document.getElementById('chungkhoan-table').innerHTML = html || '<tr><td colspan="7">Không có dữ liệu</td></tr>';
-            } catch (error) {
-                console.error('Error loading chung khoan:', error);
-            }
-        }
-
-        async function loadLenhGD() {
-            try {
-                const res = await fetch(`${API_URL}/lenhgd`);
-                const lenhs = await res.json();
-
-                const html = lenhs.map(lenh => `
-                    <tr>
-                        <td><strong>${lenh.MALENH}</strong></td>
-                        <td><span class="badge ${lenh.LOAILENH === 'Mua' ? 'badge-info' : 'badge-danger'}">${lenh.LOAILENH}</span></td>
-                        <td>${lenh.MATK}</td>
-                        <td>${lenh.MACK}</td>
-                        <td>${lenh.SLDAT.toLocaleString('vi-VN')}</td>
-                        <td>${formatCurrency(lenh.GIADAT)}</td>
-                        <td>${new Date(lenh.THOIGIANDAT).toLocaleString('vi-VN')}</td>
-                        <td><span class="badge badge-${lenh.TRANGTHAI === 'Matched' ? 'success' : lenh.TRANGTHAI === 'Pending' ? 'warning' : 'danger'}">${lenh.TRANGTHAI}</span></td>
-                        <td style="display: flex; gap: 5px;">
-                            <button class="btn btn-primary btn-sm" onclick="editLenh('${lenh.MALENH}')">✏️</button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteLenh('${lenh.MALENH}')">🗑️</button>
-                        </td>
-                    </tr>
-                `).join('');
-
-                document.getElementById('lenhgd-table').innerHTML = html || '<tr><td colspan="9">Không có dữ liệu</td></tr>';
-            } catch (error) {
-                console.error('Error loading lenh gd:', error);
-            }
-        }
-
-        async function loadAnalytics() {
-            try {
-                const res = await fetch(`${API_URL}/taikhoan`);
-                const tks = await res.json();
-
-                const riskHtml = tks
-                    .sort((a, b) => (a.TLKQHIENTAI || 0) - (b.TLKQHIENTAI || 0))
-                    .map(tk => `
                         <tr>
                             <td><strong>${tk.MATK}</strong></td>
                             <td>${tk.TENTK}</td>
-                            <td>${formatPercent(tk.TLKQHIENTAI)}</td>
-                            <td>${getRiskLevel(tk.TLKQHIENTAI)}</td>
-                            <td>${tk.TLKQHIENTAI < 30 ? '⚠️ Gọi margin ngay' : 'Theo dõi'}</td>
-                        </tr>
-                    `).join('');
+                            <td>${formatPercent(tl)}</td>
+                            <td>${getRiskLevel(tl)}</td>
+                            <td>${tl < 30 ? '⚠️ Gọi margin / bán cưỡng bức ngay' : tl < 40 ? 'Yêu cầu nộp thêm ký quỹ' : 'Theo dõi định kỳ'}</td>
+                        </tr>`;
+                }).join('') || '<tr><td colspan="5">Không có dữ liệu</td></tr>';
 
-                document.getElementById('risk-table').innerHTML = riskHtml || '<tr><td colspan="5">Không có dữ liệu</td></tr>';
-            } catch (error) {
-                console.error('Error loading analytics:', error);
+                // Biểu đồ dư nợ theo TK (top 8)
+                const top = [...store.tk].sort((a, b) => (b.TIENVAY || 0) - (a.TIENVAY || 0)).slice(0, 8);
+                drawChart('chartDebtByAccount', 'bar', {
+                    labels: top.map(t => t.MATK),
+                    datasets: [{
+                        label: 'Dư nợ (VNĐ)', data: top.map(t => t.TIENVAY || 0),
+                        backgroundColor: '#13315c'
+                    }]
+                }, { plugins: { legend: { display: false } } });
+
+                // Phân bố mức rủi ro
+                const safe = store.tk.filter(t => (t.TLKQHIENTAI || 0) >= 40).length;
+                const warn = store.tk.filter(t => (t.TLKQHIENTAI || 0) >= 30 && (t.TLKQHIENTAI || 0) < 40).length;
+                const high = store.tk.filter(t => (t.TLKQHIENTAI || 0) < 30).length;
+                drawChart('chartRiskDist', 'pie', {
+                    labels: ['Bình thường', 'Cảnh báo', 'Rủi ro cao'],
+                    datasets: [{ data: [safe, warn, high], backgroundColor: ['#1b5e20', '#e65100', '#b71c1c'], borderColor: '#fff', borderWidth: 2 }]
+                }, { plugins: { legend: { position: 'bottom' } } });
+            };
+
+            if (store.tk.length) { render(); }
+            else {
+                fetch(`${API_URL}/taikhoan`).then(r => r.json()).then(d => { store.tk = d || []; render(); })
+                    .catch(e => console.error('analytics', e));
             }
         }
 
-        // ===== CRUD OPERATIONS =====
+        // Helper tạo / cập nhật biểu đồ Chart.js
+        function drawChart(canvasId, type, data, extraOptions = {}) {
+            const canvas = document.getElementById(canvasId);
+            if (!canvas || typeof Chart === 'undefined') return;
+            if (charts[canvasId]) charts[canvasId].destroy();
+            charts[canvasId] = new Chart(canvas, {
+                type, data,
+                options: Object.assign({ responsive: true, maintainAspectRatio: false }, extraOptions)
+            });
+        }
+
+        // ===== TÀI KHOẢN =====
+        async function loadTaiKhoan() {
+            try {
+                const res = await fetch(`${API_URL}/taikhoan`);
+                store.tk = await res.json();
+                renderTaiKhoan();
+            } catch (error) { console.error('Error loading tai khoan:', error); }
+        }
+
+        function renderTaiKhoan() {
+            const q = (document.getElementById('search-tk').value || '').toLowerCase();
+            const rows = store.tk.filter(tk =>
+                !q || (tk.MATK || '').toLowerCase().includes(q) || (tk.TENTK || '').toLowerCase().includes(q));
+            document.getElementById('taikhoan-table').innerHTML = rows.map(tk => `
+                <tr>
+                    <td><strong>${tk.MATK}</strong></td>
+                    <td>${tk.TENTK}</td>
+                    <td>${formatCurrency(tk.TONGTIENHT)}</td>
+                    <td>${formatCurrency(tk.HANMUCVAY)}</td>
+                    <td>${formatCurrency(tk.TIENVAY)}</td>
+                    <td>${formatPercent(tk.TLKQHIENTAI)}</td>
+                    <td>${getStatusBadge(computeStatus(tk.TLKQHIENTAI))}</td>
+                    <td style="display: flex; gap: 5px;">
+                        <button class="btn btn-primary btn-sm" onclick="editTaiKhoan('${esc(tk.MATK)}')">✏️</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteTaiKhoan('${esc(tk.MATK)}')">🗑️</button>
+                    </td>
+                </tr>`).join('') || '<tr><td colspan="8" style="text-align:center;padding:20px;">Không tìm thấy dữ liệu</td></tr>';
+        }
+
+        // ===== VỊ THẾ =====
+        async function loadViThe() {
+            try {
+                const res = await fetch(`${API_URL}/vithe`);
+                store.vt = await res.json();
+                renderViThe();
+            } catch (error) { console.error('Error loading vithe:', error); }
+        }
+
+        function renderViThe() {
+            const q = (document.getElementById('search-vt').value || '').toLowerCase();
+            const rows = store.vt.filter(vt =>
+                !q || (vt.MATK || '').toLowerCase().includes(q) || (vt.MACK || '').toLowerCase().includes(q));
+            document.getElementById('vithe-table').innerHTML = rows.map(vt => {
+                const laiLo = (vt.GIAHIENTAI - vt.GIAVON) * vt.SLTONG;
+                const percent = vt.GIAVON ? ((vt.GIAHIENTAI - vt.GIAVON) / vt.GIAVON * 100).toFixed(2) : '0.00';
+                const cls = laiLo >= 0 ? 'text-profit' : 'text-loss';
+                return `
+                    <tr>
+                        <td><strong>${vt.MATK}</strong></td>
+                        <td><strong>${vt.MACK}</strong></td>
+                        <td>${(vt.SLTONG || 0).toLocaleString('vi-VN')}</td>
+                        <td>${formatCurrency(vt.GIAVON)}</td>
+                        <td>${formatCurrency(vt.GIAHIENTAI)}</td>
+                        <td>${formatCurrency(vt.GTTHECHAP)}</td>
+                        <td class="${cls}">${laiLo >= 0 ? '+' : ''}${formatCurrency(laiLo)}</td>
+                        <td class="${cls}">${laiLo >= 0 ? '+' : ''}${percent}%</td>
+                    </tr>`;
+            }).join('') || '<tr><td colspan="8" style="text-align:center;padding:20px;">Không tìm thấy dữ liệu</td></tr>';
+        }
+
+        // ===== CHỨNG KHOÁN =====
+        async function loadChungKhoan() {
+            try {
+                const res = await fetch(`${API_URL}/chungkhoan`);
+                store.ck = await res.json();
+                renderChungKhoan();
+            } catch (error) { console.error('Error loading chung khoan:', error); }
+        }
+
+        function renderChungKhoan() {
+            const q = (document.getElementById('search-ck').value || '').toLowerCase();
+            const rows = store.ck.filter(ck =>
+                !q || (ck.MACK || '').toLowerCase().includes(q) || (ck.TENCTY || '').toLowerCase().includes(q));
+            document.getElementById('chungkhoan-table').innerHTML = rows.map(ck => `
+                <tr>
+                    <td><strong>${ck.MACK}</strong></td>
+                    <td>${ck.TENCTY}</td>
+                    <td>${formatCurrency(ck.GIAHT)}</td>
+                    <td>${formatCurrency(ck.GIATRAN)}</td>
+                    <td>${formatCurrency(ck.GIASAN)}</td>
+                    <td>${formatPercent(ck.TYLECHOVAY)}</td>
+                    <td style="display: flex; gap: 5px;">
+                        <button class="btn btn-primary btn-sm" onclick="editChungKhoan('${esc(ck.MACK)}')">✏️</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteChungKhoan('${esc(ck.MACK)}')">🗑️</button>
+                    </td>
+                </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;padding:20px;">Không tìm thấy dữ liệu</td></tr>';
+        }
+
+        // ===== LỆNH GIAO DỊCH =====
+        async function loadLenhGD() {
+            try {
+                const res = await fetch(`${API_URL}/lenhgd`);
+                store.lenh = await res.json();
+                renderLenhGD();
+            } catch (error) { console.error('Error loading lenh gd:', error); }
+        }
+
+        function renderLenhGD() {
+            const q = (document.getElementById('search-lenh').value || '').toLowerCase();
+            const rows = store.lenh.filter(l =>
+                !q || (l.MALENH || '').toLowerCase().includes(q) ||
+                (l.MATK || '').toLowerCase().includes(q) || (l.MACK || '').toLowerCase().includes(q));
+            document.getElementById('lenhgd-table').innerHTML = rows.map(lenh => `
+                <tr>
+                    <td><strong>${lenh.MALENH}</strong></td>
+                    <td><span class="badge ${lenh.LOAILENH === 'Mua' ? 'badge-info' : 'badge-danger'}">${lenh.LOAILENH}</span></td>
+                    <td>${lenh.MATK}</td>
+                    <td>${lenh.MACK}</td>
+                    <td>${(lenh.SLDAT || 0).toLocaleString('vi-VN')}</td>
+                    <td>${formatCurrency(lenh.GIADAT)}</td>
+                    <td>${lenh.THOIGIANDAT ? new Date(lenh.THOIGIANDAT).toLocaleString('vi-VN') : ''}</td>
+                    <td><span class="badge badge-${lenh.TRANGTHAI === 'Matched' ? 'success' : lenh.TRANGTHAI === 'Pending' ? 'warning' : 'danger'}">${lenh.TRANGTHAI}</span></td>
+                    <td style="display: flex; gap: 5px;">
+                        <button class="btn btn-primary btn-sm" onclick="editLenh('${esc(lenh.MALENH)}')">✏️</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteLenh('${esc(lenh.MALENH)}')">🗑️</button>
+                    </td>
+                </tr>`).join('') || '<tr><td colspan="9" style="text-align:center;padding:20px;">Không tìm thấy dữ liệu</td></tr>';
+        }
+
+        // ===== MODAL OPEN/CLOSE =====
         function openModalAddAccount() {
+            editing.account = null;
+            document.getElementById('modal-account-title').textContent = 'Thêm Tài khoản mới';
+            document.getElementById('modal-matk').value = '';
+            document.getElementById('modal-matk').disabled = false;
+            document.getElementById('modal-tentk').value = '';
+            document.getElementById('modal-tongtienht').value = '';
+            document.getElementById('modal-hanmucvay').value = '';
+            document.getElementById('modal-tienvay').value = '0';
+            document.getElementById('modal-tlkq').value = '100';
             document.getElementById('modalAddAccount').classList.add('active');
         }
 
         function openModalAddCK() {
+            editing.ck = null;
+            document.getElementById('modal-ck-title').textContent = 'Thêm Chứng khoán';
+            ['modal-mack','modal-tencty','modal-giaht','modal-giatran','modal-giasan','modal-tylechovay'].forEach(id => document.getElementById(id).value = '');
+            document.getElementById('modal-mack').disabled = false;
             document.getElementById('modalAddCK').classList.add('active');
         }
 
         function openModalAddLenh() {
+            editing.lenh = null;
+            document.getElementById('modal-lenh-title').textContent = 'Thêm Lệnh giao dịch';
+            document.getElementById('modal-loailenh').value = 'Mua';
+            document.getElementById('modal-matk-lenh').value = '';
+            document.getElementById('modal-matk-lenh').disabled = false;
+            document.getElementById('modal-mack-lenh').value = '';
+            document.getElementById('modal-mack-lenh').disabled = false;
+            document.getElementById('modal-sldat').value = '';
+            document.getElementById('modal-giadat').value = '';
+            document.getElementById('modal-trangthai-lenh').value = 'Pending';
             document.getElementById('modalAddLenh').classList.add('active');
         }
 
-        function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('active');
+        function closeModal(modalId) { document.getElementById(modalId).classList.remove('active'); }
+
+        // ===== EDIT: nạp dữ liệu vào modal =====
+        function editTaiKhoan(matk) {
+            const tk = store.tk.find(t => String(t.MATK) === String(matk));
+            if (!tk) return;
+            editing.account = matk;
+            document.getElementById('modal-account-title').textContent = 'Sửa Tài khoản ' + matk;
+            document.getElementById('modal-matk').value = tk.MATK;
+            document.getElementById('modal-matk').disabled = true; // không cho sửa khóa chính
+            document.getElementById('modal-tentk').value = tk.TENTK || '';
+            document.getElementById('modal-tongtienht').value = tk.TONGTIENHT || 0;
+            document.getElementById('modal-hanmucvay').value = tk.HANMUCVAY || 0;
+            document.getElementById('modal-tienvay').value = tk.TIENVAY || 0;
+            document.getElementById('modal-tlkq').value = tk.TLKQHIENTAI || 0;
+            document.getElementById('modalAddAccount').classList.add('active');
         }
 
-        async function saveNewAccount() {
-            const matk = document.getElementById('modal-matk').value;
-            const tentk = document.getElementById('modal-tentk').value;
+        function editChungKhoan(mack) {
+            const ck = store.ck.find(c => String(c.MACK) === String(mack));
+            if (!ck) return;
+            editing.ck = mack;
+            document.getElementById('modal-ck-title').textContent = 'Sửa Chứng khoán ' + mack;
+            document.getElementById('modal-mack').value = ck.MACK;
+            document.getElementById('modal-mack').disabled = true;
+            document.getElementById('modal-tencty').value = ck.TENCTY || '';
+            document.getElementById('modal-giaht').value = ck.GIAHT || 0;
+            document.getElementById('modal-giatran').value = ck.GIATRAN || 0;
+            document.getElementById('modal-giasan').value = ck.GIASAN || 0;
+            document.getElementById('modal-tylechovay').value = ck.TYLECHOVAY || 0;
+            document.getElementById('modalAddCK').classList.add('active');
+        }
+
+        function editLenh(malenh) {
+            const l = store.lenh.find(x => String(x.MALENH) === String(malenh));
+            if (!l) return;
+            editing.lenh = malenh;
+            document.getElementById('modal-lenh-title').textContent = 'Sửa Lệnh ' + malenh;
+            document.getElementById('modal-loailenh').value = l.LOAILENH || 'Mua';
+            document.getElementById('modal-matk-lenh').value = l.MATK || '';
+            document.getElementById('modal-matk-lenh').disabled = true;
+            document.getElementById('modal-mack-lenh').value = l.MACK || '';
+            document.getElementById('modal-mack-lenh').disabled = true;
+            document.getElementById('modal-sldat').value = l.SLDAT || 0;
+            document.getElementById('modal-giadat').value = l.GIADAT || 0;
+            document.getElementById('modal-trangthai-lenh').value = l.TRANGTHAI || 'Pending';
+            document.getElementById('modalAddLenh').classList.add('active');
+        }
+
+        // ===== SAVE (Thêm hoặc Sửa) =====
+        async function saveAccount() {
+            const matk = document.getElementById('modal-matk').value.trim();
+            const tentk = document.getElementById('modal-tentk').value.trim();
             const tongtienht = parseFloat(document.getElementById('modal-tongtienht').value) || 0;
             const hanmucvay = parseFloat(document.getElementById('modal-hanmucvay').value) || 0;
+            const tienvay = parseFloat(document.getElementById('modal-tienvay').value) || 0;
+            const tlkq = parseFloat(document.getElementById('modal-tlkq').value) || 0;
+            if (!matk || !tentk) { alert('Vui lòng điền Mã TK và Tên TK'); return; }
 
-            if (!matk || !tentk) {
-                alert('Vui lòng điền đầy đủ thông tin');
-                return;
-            }
-
+            const payload = { MATK: matk, TENTK: tentk, TONGTIENHT: tongtienht, HANMUCVAY: hanmucvay, TIENVAY: tienvay, TLKQHIENTAI: tlkq };
             try {
-                const res = await fetch(`${API_URL}/taikhoan`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        MATK: matk,
-                        TENTK: tentk,
-                        TONGTIENHT: tongtienht,
-                        HANMUCVAY: hanmucvay,
-                        TIENVAY: 0,
-                        TLKQHIENTAI: 100,
-                        TRANGTHAI: 'Active'
-                    })
-                });
-
-                if (res.ok) {
-                    showNotification('success', '✓ Tài khoản đã được thêm thành công');
-                    closeModal('modalAddAccount');
-                    loadTaiKhoan();
-                    addAIMessage('suggest', `✅ Tài khoản ${matk} đã được tạo thành công.`);
+                let res;
+                if (editing.account) {
+                    res = await fetch(`${API_URL}/taikhoan/${editing.account}`, {
+                        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                    });
                 } else {
-                    showNotification('error', '❌ Lỗi khi thêm tài khoản');
+                    res = await fetch(`${API_URL}/taikhoan`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                    });
                 }
-            } catch (error) {
-                showNotification('error', `❌ Lỗi: ${error.message}`);
-            }
+                if (res.ok) {
+                    showNotification('success', editing.account ? '✓ Đã cập nhật tài khoản' : '✓ Đã thêm tài khoản');
+                    closeModal('modalAddAccount');
+                    await loadTaiKhoan();
+                    addAIMessage('suggest', `✅ Tài khoản ${matk} (${computeStatus(tlkq)}) đã được lưu.`);
+                } else {
+                    const e = await res.json().catch(() => ({}));
+                    showNotification('error', '❌ Lỗi: ' + (e.error || res.status));
+                }
+            } catch (error) { showNotification('error', `❌ Lỗi: ${error.message}`); }
         }
 
-        async function saveNewCK() {
-            const mack = document.getElementById('modal-mack').value;
-            const tencty = document.getElementById('modal-tencty').value;
+        async function saveCK() {
+            const mack = document.getElementById('modal-mack').value.trim();
+            const tencty = document.getElementById('modal-tencty').value.trim();
             const giaht = parseFloat(document.getElementById('modal-giaht').value) || 0;
             const giatran = parseFloat(document.getElementById('modal-giatran').value) || 0;
             const giasan = parseFloat(document.getElementById('modal-giasan').value) || 0;
             const tylechovay = parseFloat(document.getElementById('modal-tylechovay').value) || 0;
+            if (!mack || !tencty) { alert('Vui lòng điền Mã CK và Tên công ty'); return; }
 
-            if (!mack || !tencty) {
-                alert('Vui lòng điền đầy đủ thông tin');
-                return;
-            }
-
+            const payload = { MACK: mack, TENCTY: tencty, GIAHT: giaht, GIATRAN: giatran, GIASAN: giasan, TYLECHOVAY: tylechovay };
             try {
-                const res = await fetch(`${API_URL}/chungkhoan`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        MACK: mack,
-                        TENCTY: tencty,
-                        GIAHT: giaht,
-                        GIATRAN: giatran,
-                        GIASAN: giasan,
-                        TYLECHOVAY: tylechovay
-                    })
-                });
-
-                if (res.ok) {
-                    showNotification('success', '✓ Chứng khoán đã được thêm thành công');
-                    closeModal('modalAddCK');
-                    loadChungKhoan();
+                let res;
+                if (editing.ck) {
+                    res = await fetch(`${API_URL}/chungkhoan/${editing.ck}`, {
+                        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                    });
                 } else {
-                    showNotification('error', '❌ Lỗi khi thêm chứng khoán');
+                    res = await fetch(`${API_URL}/chungkhoan`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                    });
                 }
-            } catch (error) {
-                showNotification('error', `❌ Lỗi: ${error.message}`);
-            }
+                if (res.ok) {
+                    showNotification('success', editing.ck ? '✓ Đã cập nhật chứng khoán' : '✓ Đã thêm chứng khoán');
+                    closeModal('modalAddCK');
+                    await loadChungKhoan();
+                } else {
+                    const e = await res.json().catch(() => ({}));
+                    showNotification('error', '❌ Lỗi: ' + (e.error || res.status));
+                }
+            } catch (error) { showNotification('error', `❌ Lỗi: ${error.message}`); }
         }
 
-        async function saveNewLenh() {
+        async function saveLenh() {
             const loailenh = document.getElementById('modal-loailenh').value;
-            const matk = document.getElementById('modal-matk-lenh').value;
-            const mack = document.getElementById('modal-mack-lenh').value;
+            const matk = document.getElementById('modal-matk-lenh').value.trim();
+            const mack = document.getElementById('modal-mack-lenh').value.trim();
             const sldat = parseInt(document.getElementById('modal-sldat').value) || 0;
             const giadat = parseFloat(document.getElementById('modal-giadat').value) || 0;
             const trangthai = document.getElementById('modal-trangthai-lenh').value;
-
-            if (!loailenh || !matk || !mack) {
-                alert('Vui lòng điền đầy đủ thông tin');
-                return;
-            }
+            if (!matk || !mack) { alert('Vui lòng điền Mã TK và Mã CK'); return; }
 
             try {
-                const malenh = 'L' + Date.now();
-                const res = await fetch(`${API_URL}/lenhgd`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        MALENH: malenh,
-                        LOAILENH: loailenh,
-                        MATK: matk,
-                        MACK: mack,
-                        SLDAT: sldat,
-                        GIADAT: giadat,
-                        TRANGTHAI: trangthai,
-                        THOIGIANDAT: new Date().toISOString()
-                    })
-                });
-
-                if (res.ok) {
-                    showNotification('success', '✓ Lệnh giao dịch đã được tạo thành công');
-                    closeModal('modalAddLenh');
-                    loadLenhGD();
-                    addAIMessage('suggest', `✅ Lệnh ${loailenh} ${sldat} cổ phiếu ${mack} đã được tạo.`);
+                let res;
+                if (editing.lenh) {
+                    res = await fetch(`${API_URL}/lenhgd/${editing.lenh}`, {
+                        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ LOAILENH: loailenh, SLDAT: sldat, GIADAT: giadat, TRANGTHAI: trangthai })
+                    });
                 } else {
-                    showNotification('error', '❌ Lỗi khi tạo lệnh');
+                    const malenh = 'L' + Date.now();
+                    res = await fetch(`${API_URL}/lenhgd`, {
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ MALENH: malenh, LOAILENH: loailenh, MATK: matk, MACK: mack, SLDAT: sldat, GIADAT: giadat, TRANGTHAI: trangthai, THOIGIANDAT: new Date().toISOString() })
+                    });
                 }
-            } catch (error) {
-                showNotification('error', `❌ Lỗi: ${error.message}`);
-            }
+                if (res.ok) {
+                    showNotification('success', editing.lenh ? '✓ Đã cập nhật lệnh' : '✓ Đã tạo lệnh');
+                    closeModal('modalAddLenh');
+                    await loadLenhGD();
+                    if (!editing.lenh) addAIMessage('suggest', `✅ Lệnh ${loailenh} ${sldat} CP ${mack} đã được tạo.`);
+                } else {
+                    const e = await res.json().catch(() => ({}));
+                    showNotification('error', '❌ Lỗi: ' + (e.error || res.status));
+                }
+            } catch (error) { showNotification('error', `❌ Lỗi: ${error.message}`); }
         }
 
-        // ===== DELETE FUNCTIONS =====
+        // ===== DELETE =====
         async function deleteTaiKhoan(matk) {
-            if (!confirm('Bạn chắc chắn muốn xóa tài khoản này?')) return;
-            
+            if (!confirm('Bạn chắc chắn muốn xóa tài khoản ' + matk + '?')) return;
             try {
                 const res = await fetch(`${API_URL}/taikhoan/${matk}`, { method: 'DELETE' });
-                if (res.ok) {
-                    showNotification('success', '✓ Tài khoản đã xóa');
-                    loadTaiKhoan();
-                } else {
-                    showNotification('error', '❌ Lỗi xóa tài khoản');
-                }
-            } catch (error) {
-                showNotification('error', `❌ Lỗi: ${error.message}`);
-            }
+                if (res.ok) { showNotification('success', '✓ Tài khoản đã xóa'); loadTaiKhoan(); }
+                else showNotification('error', '❌ Lỗi xóa (có thể do ràng buộc dữ liệu)');
+            } catch (error) { showNotification('error', `❌ Lỗi: ${error.message}`); }
         }
 
         async function deleteChungKhoan(mack) {
-            if (!confirm('Bạn chắc chắn muốn xóa?')) return;
-            
+            if (!confirm('Bạn chắc chắn muốn xóa chứng khoán ' + mack + '?')) return;
             try {
                 const res = await fetch(`${API_URL}/chungkhoan/${mack}`, { method: 'DELETE' });
-                if (res.ok) {
-                    showNotification('success', '✓ Đã xóa');
-                    loadChungKhoan();
-                } else {
-                    showNotification('error', '❌ Lỗi xóa');
-                }
-            } catch (error) {
-                showNotification('error', `❌ Lỗi: ${error.message}`);
-            }
+                if (res.ok) { showNotification('success', '✓ Đã xóa'); loadChungKhoan(); }
+                else showNotification('error', '❌ Lỗi xóa (có thể do ràng buộc dữ liệu)');
+            } catch (error) { showNotification('error', `❌ Lỗi: ${error.message}`); }
         }
 
         async function deleteLenh(malenh) {
-            if (!confirm('Bạn chắc chắn muốn xóa lệnh này?')) return;
-            
+            if (!confirm('Bạn chắc chắn muốn xóa lệnh ' + malenh + '?')) return;
             try {
                 const res = await fetch(`${API_URL}/lenhgd/${malenh}`, { method: 'DELETE' });
-                if (res.ok) {
-                    showNotification('success', '✓ Lệnh đã xóa');
-                    loadLenhGD();
-                } else {
-                    showNotification('error', '❌ Lỗi xóa lệnh');
-                }
-            } catch (error) {
-                showNotification('error', `❌ Lỗi: ${error.message}`);
-            }
+                if (res.ok) { showNotification('success', '✓ Lệnh đã xóa'); loadLenhGD(); }
+                else showNotification('error', '❌ Lỗi xóa lệnh');
+            } catch (error) { showNotification('error', `❌ Lỗi: ${error.message}`); }
         }
 
-        // ===== NOTIFICATIONS & MESSAGES =====
+        // ===== NOTIFICATION & AI =====
         function showNotification(type, message) {
-            const notification = document.createElement('div');
-            notification.className = `notification ${type}`;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
+            const n = document.createElement('div');
+            n.className = `notification ${type}`;
+            n.textContent = message;
+            document.body.appendChild(n);
+            setTimeout(() => n.remove(), 3000);
         }
 
         function addAIMessage(type, message) {
-            const messagesDiv = document.getElementById('ai-messages');
-            const messageElement = document.createElement('div');
-            messageElement.className = `ai-message ${type}`;
-            messageElement.textContent = message;
-            messagesDiv.appendChild(messageElement);
-            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            const d = document.getElementById('ai-messages');
+            const el = document.createElement('div');
+            el.className = `ai-message ${type}`;
+            el.textContent = message;
+            d.appendChild(el);
+            d.scrollTop = d.scrollHeight;
         }
 
-        async function sendAIQuery() {
+        // Quét rủi ro tự động & cảnh báo
+        function runRiskScan() {
+            const fs = store.tk.filter(t => computeStatus(t.TLKQHIENTAI) === 'Force Sell');
+            const wn = store.tk.filter(t => computeStatus(t.TLKQHIENTAI) === 'Warning');
+            if (fs.length) addAIMessage('system', `🔴 ${fs.length} tài khoản cần bán cưỡng bức: ${fs.map(t => t.MATK).join(', ')}`);
+            else if (wn.length) addAIMessage('warning', `⚠️ ${wn.length} tài khoản đang cảnh báo: ${wn.map(t => t.MATK).join(', ')}`);
+        }
+
+        // JARVIS trả lời dựa trên dữ liệu thật trong store
+        function sendAIQuery() {
             const input = document.getElementById('ai-input');
             const query = input.value.trim();
-
             if (!query) return;
-
             input.value = '';
-            addAIMessage('system', `You: ${query}`);
+            addAIMessage('system', `Bạn: ${query}`);
 
-            // Simulate AI response
             setTimeout(() => {
-                const responses = [
-                    '✅ Phân tích dữ liệu thành công. Tài khoản TK001 có margin cao, khuyên giám sát TK008 & TK012.',
-                    '⚠️ Cảnh báo: 2 tài khoản đang ở mức nguy hiểm. Khuyên gọi margin ngay.',
-                    '💡 Gợi ý: Nên bán một phần vị thế HPG để tối ưu hóa margin ratio.',
-                    '📊 Báo cáo: Doanh thu hôm nay +2.5%, margin trung bình 65%.'
-                ];
-                const response = responses[Math.floor(Math.random() * responses.length)];
-                addAIMessage('suggest', response);
-            }, 500);
+                const q = query.toLowerCase();
+                const totalDebt = store.tk.reduce((s, t) => s + (t.TIENVAY || 0), 0);
+                const fs = store.tk.filter(t => computeStatus(t.TLKQHIENTAI) === 'Force Sell');
+                const wn = store.tk.filter(t => computeStatus(t.TLKQHIENTAI) === 'Warning');
+                const netPnL = store.vt.reduce((s, v) => s + (v.GIAHIENTAI - v.GIAVON) * v.SLTONG, 0);
+
+                let ans;
+                if (q.includes('rủi ro') || q.includes('cảnh báo') || q.includes('force') || q.includes('margin')) {
+                    ans = `📊 Có ${fs.length} TK cần bán cưỡng bức và ${wn.length} TK cảnh báo. ` +
+                          (fs.length ? `Ưu tiên xử lý: ${fs.map(t => t.MATK).join(', ')}.` : 'Danh mục đang trong ngưỡng an toàn.');
+                } else if (q.includes('dư nợ') || q.includes('nợ') || q.includes('vay')) {
+                    ans = `💰 Tổng dư nợ margin hiện tại: ${formatCurrency(totalDebt)} trên ${store.tk.length} tài khoản.`;
+                } else if (q.includes('lãi') || q.includes('lỗ') || q.includes('lợi nhuận')) {
+                    ans = `📈 Lãi/Lỗ ròng toàn danh mục: ${(netPnL >= 0 ? '+' : '') + formatCurrency(netPnL)}.`;
+                } else {
+                    ans = `🤖 Tôi đang theo dõi ${store.tk.length} TK, dư nợ ${formatCurrency(totalDebt)}, ${wn.length} cảnh báo, ${fs.length} bán cưỡng bức. Hỏi tôi về "rủi ro", "dư nợ" hoặc "lãi lỗ".`;
+                }
+                addAIMessage('suggest', ans);
+            }, 400);
         }
 
         function toggleAICopilot() {
-            const copilot = document.querySelector('.ai-copilot');
-            copilot.style.display = copilot.style.display === 'none' ? 'flex' : 'none';
+            const c = document.querySelector('.ai-copilot');
+            c.style.display = c.style.display === 'none' ? 'flex' : 'none';
         }
 
         // ===== SETTINGS =====
         function saveApiKey() {
-            const apiKey = document.getElementById('api-key-input').value;
-            if (!apiKey) {
-                alert('Vui lòng nhập API Key');
-                return;
-            }
-            localStorage.setItem('ai-api-key', apiKey);
+            const k = document.getElementById('api-key-input').value;
+            if (!k) { alert('Vui lòng nhập API Key'); return; }
+            localStorage.setItem('ai-api-key', k);
             showNotification('success', '✓ API Key đã lưu');
             addAIMessage('system', '🔐 API Key đã được cấu hình cho AI Copilot.');
         }
-
         function toggleApiKeyVisibility() {
-            const input = document.getElementById('api-key-input');
-            input.type = input.type === 'password' ? 'text' : 'password';
+            const i = document.getElementById('api-key-input');
+            i.type = i.type === 'password' ? 'text' : 'password';
         }
-
-        function saveMarginSettings() {
-            showNotification('success', '✓ Cấu hình Margin đã lưu');
-        }
-
-        function saveNotificationSettings() {
-            showNotification('success', '✓ Cấu hình thông báo đã lưu');
-        }
+        function saveMarginSettings() { showNotification('success', '✓ Cấu hình Margin đã lưu'); }
+        function saveNotificationSettings() { showNotification('success', '✓ Cấu hình thông báo đã lưu'); }
 
         // ===== CLOCK =====
         function updateClock() {
-            const now = new Date();
-            document.getElementById('current-time').textContent = now.toLocaleString('vi-VN');
+            document.getElementById('current-time').textContent = new Date().toLocaleString('vi-VN');
         }
 
         // ===== INIT =====
@@ -1737,33 +1694,10 @@
             loadDashboard();
             updateClock();
             setInterval(updateClock, 1000);
-            
-            // Load API Key if saved
-            const savedApiKey = localStorage.getItem('ai-api-key');
-            if (savedApiKey) {
-                document.getElementById('api-key-input').value = savedApiKey;
-            }
-
-            // AI Initial Messages
-            setTimeout(() => {
-                addAIMessage('system', '🎯 JARVIS: Sẵn sàng phân tích thị trường margin...');
-                addAIMessage('suggest', '💡 Gợi ý: Kiểm tra 2 tài khoản cảnh báo để tối ưu hóa margin ratio.');
-            }, 1000);
+            const k = localStorage.getItem('ai-api-key');
+            if (k) document.getElementById('api-key-input').value = k;
+            setTimeout(() => addAIMessage('suggest', '💡 JARVIS sẵn sàng. Gõ "rủi ro", "dư nợ" hoặc "lãi lỗ" để được tư vấn.'), 1000);
         });
-
-        // Placeholder functions for edit
-        function editTaiKhoan(matk) {
-            console.log('Edit:', matk);
-            // Implement edit functionality
-        }
-
-        function editChungKhoan(mack) {
-            console.log('Edit:', mack);
-        }
-
-        function editLenh(malenh) {
-            console.log('Edit:', malenh);
-        }
     </script>
 </body>
 </html>
